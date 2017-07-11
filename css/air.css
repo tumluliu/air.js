@@ -292,7 +292,7 @@ input:not(:valid) + .mapbox-close-icon {
 /* icons */
 
 .mapbox-directions-icon {
-    background-image: url('mmrp.png');
+    background-image: url('air.png');
     -webkit-background-size: 300px 20px;
     background-size: 300px 20px;
     background-repeat: no-repeat;
