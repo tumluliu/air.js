@@ -6,7 +6,7 @@ var tableControl = require('./table_control.js'),
 module.exports = function(container, directions) {
     var control = {}, map;
     var origChange = false, destChange = false;
-    var TRACKINFO_API_URL = "http://luliu.me/tracks/api/v1/trackinfo";
+    var TRACKINFO_API_URL = "https://luliu.me/tracks/api/v1/trackinfo";
     var TRACK_API_URL = "https://luliu.me/tracks/api/v1/tracks";
 
     control.addTo = function(_) {
