@@ -1,0 +1,6 @@
+*.un~
+*.swo
+.python-version
+dist/
+.idea/
+node_modules/

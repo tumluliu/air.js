@@ -1,0 +1,33 @@
+{
+  "name": "air.js",
+  "version": "0.1.0",
+  "description": "Leaflet plugin for the AI routing API",
+  "main": "index.js",
+  "scripts": {
+    "test": "jshint src && npm run build && mocha-phantomjs test/index.html",
+    "build": "browserify --debug index.js > dist/air.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tumluliu/air.js.git"
+  },
+  "dependencies": {
+    "d3": "latest",
+    "d3-xhr": "latest",
+    "spin.js": "latest",
+    "debounce": "latest",
+    "mapbox.js": "latest",
+    "@mapbox/polyline": "latest",
+    "queue-async": "latest"
+  },
+  "devDependencies": {
+    "mocha": "1",
+    "mocha-phantomjs": "3",
+    "expect.js": "0.2.0",
+    "sinon": "1.7.3",
+    "browserify": "2",
+    "jshint": "2",
+    "smash": "0.0"
+  },
+  "license": "MIT"
+}
