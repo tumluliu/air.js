@@ -16,8 +16,6 @@ module.exports = function(container, directions) {
     container = d3.select(L.DomUtil.get(container))
         .classed('mapbox-directions-inputs', true);
 
-    var publicTransitSelection = ['underground'];
-
     var form = container.append('form')
         .on('keypress', function() {
             if (d3.event.keyCode === 13) {
@@ -109,19 +107,23 @@ module.exports = function(container, directions) {
 
     mapboxDirections.append('h3')
         .attr('value', 'MAPBOX')
-        .attr('style', 'margin: 5 0 0 5')
+        .attr('style', 'margin: 5px 0px 0px 5px')
         .text('MAPBOX DIRECTIONS');
 
     mapboxDirections.append('input')
         .attr('type', 'checkbox')
         .attr('name', 'enabled')
-        .attr('id', 'enable-mapbox-directions')
+        .attr('id', 'show-mapbox-cycling')
         .property('checked', false)
         .on('change', function(d) {
            if (this.checked) {
-               alert("to call mapbox directions API to fetch cycling path");
+               directions.query({'provider': 'mapbox'});
            }
         });
+
+    mapboxDirections.append('label')
+        .attr('for', 'show-mapbox-cycling')
+        .text('Show cycling path');
 
     var car_profile = form.append('div')
         .attr('id', 'air-car-profiles')

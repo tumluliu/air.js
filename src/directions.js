@@ -14,6 +14,9 @@ var Directions = L.Class.extend({
 
     statics: {
         AIR_API_TEMPLATE: 'http://luliu.me/air/api/v1',
+        MAPBOX_API_TEMPLATE: '',
+        ORS_API_TEMPLATE: '',
+        GOOGLE_API_TEMPLATE: '',
         GEOCODER_TEMPLATE: 'https://api.tiles.mapbox.com/v4/geocode/mapbox.places/{query}.json?proximity={proximity}&access_token={token}'
     },
 
@@ -157,8 +160,20 @@ var Directions = L.Class.extend({
         this.fire('highlightStep', {step: step});
     },
 
-    queryURL: function () {
+    queryURL: function (provider) {
         return Directions.AIR_API_TEMPLATE;
+    },
+
+    queryMapboxURL: function () {
+        return Directions.MAPBOX_API_TEMPLATE;
+    },
+
+    queryOpenRouteServiceURL: function () {
+        return Directions.ORS_API_TEMPLATE;
+    },
+
+    queryGoogleURL: function () {
+        return Directions.GOOGLE_API_TEMPLATE;
     },
 
     queryable: function () {
