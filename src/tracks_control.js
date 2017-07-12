@@ -18,7 +18,7 @@ module.exports = function(container, directions) {
     // Web browser compatibility:
     // for IE7+, Firefox, Chrome, Opera, Safari
     container = document.getElementById(container);
-    container.insertAdjacentHTML('afterbegin', '<table id="table" class="prose"></table>');
+    container.insertAdjacentHTML('afterbegin', '<table id="tracks-table" class="prose air-tracks"></table>');
     container.insertAdjacentHTML('beforeend', '<div id="paging" data-control="paging"></div>');
 
     var trackinfoKeys = [
@@ -28,7 +28,7 @@ module.exports = function(container, directions) {
     ],
     values = [];
     var page = 1, totalPages = 1, numResults = 1;
-    var tc = new tableControl(document.getElementById('table'), 
+    var tc = new tableControl(document.getElementById('tracks-table'), 
             trackinfoKeys, values);
     var pg = new pagingControl(document.getElementById('paging'), 
             {displayed: 0, total: 0});

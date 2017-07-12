@@ -4,7 +4,7 @@
 .mapbox-directions-errors,
 .mapbox-directions-routes,
 .mapbox-directions-instructions {
-    font:15px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    font: 15px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
 
 .mapbox-directions-inputs,
@@ -20,6 +20,7 @@
     box-sizing: border-box;
 }
 
+
 /* Inputs */
 
 .mapbox-directions-origin,
@@ -34,7 +35,7 @@
     left: 0;
     top: 0;
     background: #444;
-    color: rgba(0,0,0,.75);
+    color: rgba(0, 0, 0, .75);
     font-weight: bold;
     text-align: center;
     padding: 10px;
@@ -53,20 +54,20 @@
     /*background-color: transparent;*/
     height: 40px;
     margin: 0;
-    color: rgba(0,0,0,.5);
+    color: rgba(0, 0, 0, .5);
     padding: 10px 10px 10px 50px;
 }
 
 .mapbox-directions-inputs input:focus {
     background-color: transparent;
-    color: rgba(0,0,0,.75);
-    outline:0;
+    color: rgba(0, 0, 0, .75);
+    outline: 0;
     box-shadow: none;
     outline: thin dotted\8;
 }
 
 .mapbox-directions-destination input {
-    border-top: 1px solid rgba(0,0,0,.1);
+    border-top: 1px solid rgba(0, 0, 0, .1);
 }
 
 .mapbox-directions-reverse-input {
@@ -87,7 +88,7 @@
     cursor: pointer;
 }
 
-input:not(:valid) + .mapbox-close-icon {
+input:not(:valid)+.mapbox-close-icon {
     display: none;
 }
 
@@ -101,7 +102,7 @@ input:not(:valid) + .mapbox-close-icon {
     padding: 2px;
     border-radius: 2px;
     vertical-align: middle;
-    background: rgba(255,255,255,.8);
+    background: rgba(255, 255, 255, .8);
     height: 150px;
 }
 
@@ -112,7 +113,7 @@ input:not(:valid) + .mapbox-close-icon {
     border-radius: 16px;
     padding: 3px 5px;
     font-size: 12px;
-    color: rgba(0,0,0,0.5);
+    color: rgba(0, 0, 0, 0.5);
     line-height: 20px;
     text-align: center;
     width: 33.33%;
@@ -132,22 +133,22 @@ input:not(:valid) + .mapbox-close-icon {
     margin-left: 20px;
 }
 
-.mapbox-directions-profile input[type=radio]:checked + label {
+.mapbox-directions-profile input[type=radio]:checked+label {
     background: white;
-    color: rgba(0,0,0,.5);
+    color: rgba(0, 0, 0, .5);
 }
 
-.mapbox-directions-profile input[type=checkbox] + label {
+.mapbox-directions-profile input[type=checkbox]+label {
     background-color: transparent;
     vertical-align: middle;
     text-align: left;
     font-size: 14px;
-    color: rgba(0,0,0,.5);
+    color: rgba(0, 0, 0, .5);
     width: 80%;
 }
 
 .mapbox-directions-profile input[type=button] {
-    background-color:#3887be;
+    background-color: #3887be;
     width: 300px;
     text-align: center;
     color: #fff;
@@ -169,29 +170,30 @@ input:not(:valid) + .mapbox-close-icon {
 
 .mapbox-directions-profile input[type=button]:hover,
 .mapbox-directions-profile input[type=button].active {
-    background-color:#3bb2d0;
+    background-color: #3bb2d0;
 }
 
 .mapbox-directions-profile input[type=button]:focus {
-    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.1);
+    box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .mapbox-directions-profile input[type=button].disabled,
 .mapbox-directions-profile input[type=button]:disabled {
-    background:rgba(229,229,229,.9);
-    color:rgba(0,0,0,0.25);
+    background: rgba(229, 229, 229, .9);
+    color: rgba(0, 0, 0, 0.25);
     cursor: default;
 }
 
 .mapbox-directions-profile input[type=button].disabled:hover,
 .mapbox-directions-profile input[type=button]:disabled:hover {
-    background:rgba(229,229,229,.9);
+    background: rgba(229, 229, 229, .9);
 }
 
 .mapbox-directions-profile input[type=button].disabled:focus,
 .mapbox-directions-profile input[type=button]:disabled:focus {
-    box-shadow:none;
+    box-shadow: none;
 }
+
 
 /* Errors */
 
@@ -201,13 +203,14 @@ input:not(:valid) + .mapbox-close-icon {
     padding: 0 5px;
 }
 
+
 /* Routes */
 
 .mapbox-directions-routes ul {
     list-style: none;
     margin: 0;
     padding: 10px 10px 0 10px;
-    border-bottom: 1px solid rgba(255,255,255,.25);
+    border-bottom: 1px solid rgba(255, 255, 255, .25);
 }
 
 .mapbox-directions-routes li {
@@ -216,7 +219,7 @@ input:not(:valid) + .mapbox-close-icon {
     display: block;
     position: relative;
     cursor: pointer;
-    color: rgba(255,255,255,.5);
+    color: rgba(255, 255, 255, .5);
     min-height: 60px;
 }
 
@@ -241,8 +244,9 @@ input:not(:valid) + .mapbox-close-icon {
 
 .mapbox-directions-route-details {
     font-size: 12px;
-    color: rgba(255,255,255,.5);
+    color: rgba(255, 255, 255, .5);
 }
+
 
 /* Instructions */
 
@@ -255,7 +259,7 @@ input:not(:valid) + .mapbox-close-icon {
 
 .mapbox-directions-step {
     position: relative;
-    color: rgba(255,255,255,.75);
+    color: rgba(255, 255, 255, .75);
     cursor: pointer;
     padding: 20px 20px 20px 40px;
     font-size: 20px;
@@ -263,7 +267,7 @@ input:not(:valid) + .mapbox-close-icon {
 }
 
 .mapbox-directions-step-distance {
-    color: rgba(255,255,255,.5);
+    color: rgba(255, 255, 255, .5);
     position: absolute;
     padding: 5px 10px;
     font-size: 12px;
@@ -280,7 +284,7 @@ input:not(:valid) + .mapbox-close-icon {
     position: absolute;
     top: 50px;
     bottom: -20px;
-    border-left: 2px dotted rgba(255,255,255,.2);
+    border-left: 2px dotted rgba(255, 255, 255, .2);
     left: 20px;
 }
 
@@ -288,6 +292,7 @@ input:not(:valid) + .mapbox-close-icon {
 .mapbox-directions-step:last-child .mapbox-directions-step-distance {
     display: none;
 }
+
 
 /* icons */
 
@@ -311,36 +316,123 @@ input:not(:valid) + .mapbox-close-icon {
     margin: auto;
 }
 
-.mapbox-continue-icon          { background-position: 0 0; }
-.mapbox-continue-icon          { background-position: -20px 0; }
-.mmrp-underground_station-icon { background-position: -40px 0; }
-.mmrp-suburban_station-icon    { background-position: -60px 0; }
-.mmrp-tram_station-icon        { background-position: -80px 0; }
-.mmrp-bus_station-icon         { background-position: -100px 0; }
-.mmrp-car_parking-icon         { background-position: -120px 0; }
-.mmrp-park_and_ride-icon       { background-position: -140px 0; }
-.mapbox-bear-left-icon         { background-position: -160px 0; }
-.mapbox-depart-icon            { background-position: -180px 0; }
-.mapbox-enter-roundabout-icon  { background-position: -200px 0; }
-.mapbox-arrive-icon            { background-position: -220px 0; }
-.mapbox-close-icon             { background-position: -240px 0; }
-.mapbox-reverse-icon           { background-position: -260px 0; }
-.mapbox-error-icon             { background-position: -280px 0; }
+.mapbox-continue-icon {
+    background-position: 0 0;
+}
+
+.mapbox-continue-icon {
+    background-position: -20px 0;
+}
+
+.mmrp-underground_station-icon {
+    background-position: -40px 0;
+}
+
+.mmrp-suburban_station-icon {
+    background-position: -60px 0;
+}
+
+.mmrp-tram_station-icon {
+    background-position: -80px 0;
+}
+
+.mmrp-bus_station-icon {
+    background-position: -100px 0;
+}
+
+.mmrp-car_parking-icon {
+    background-position: -120px 0;
+}
+
+.mmrp-park_and_ride-icon {
+    background-position: -140px 0;
+}
+
+.mapbox-bear-left-icon {
+    background-position: -160px 0;
+}
+
+.mapbox-depart-icon {
+    background-position: -180px 0;
+}
+
+.mapbox-enter-roundabout-icon {
+    background-position: -200px 0;
+}
+
+.mapbox-arrive-icon {
+    background-position: -220px 0;
+}
+
+.mapbox-close-icon {
+    background-position: -240px 0;
+}
+
+.mapbox-reverse-icon {
+    background-position: -260px 0;
+}
+
+.mapbox-error-icon {
+    background-position: -280px 0;
+}
 
 .mapbox-marker-drag-icon {
     display: block;
     background-color: #444;
     border-radius: 50%;
-    box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 }
 
 .mapbox-marker-drag-icon-step {
     background-color: #3BB2D0;
 }
+
+
 /* leaflet overrides */
 
+
 /*path.leaflet-clickable {*/
-    /*stroke: #3BB2D0;*/
-    /*stroke-width: 4px;*/
-    /*stroke-opacity:.75;*/
+
+
+/*stroke: #3BB2D0;*/
+
+
+/*stroke-width: 4px;*/
+
+
+/*stroke-opacity:.75;*/
+
+
 /*}*/
+
+/*track information table*/
+table.air-tracks {
+    display: table;
+    width: 100%;
+}
+
+table.air-tracks thead,
+table.air-tracks tbody {
+    width: 100%;
+}
+
+table.air-tracks thead {
+    overflow-y: scroll;
+    display: table;
+    table-layout: fixed;
+    width: calc(100% - 16px);
+    /* assuming scrollbar width as 16px */
+}
+
+table.air-tracks tbody {
+    overflow: auto;
+    height: 150px;
+    display: block;
+}
+
+table.air-tracks tr {
+    width: 100%;
+    text-align: left;
+    display: table;
+    table-layout: fixed;
+}
