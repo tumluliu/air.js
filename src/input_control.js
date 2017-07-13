@@ -117,7 +117,7 @@ module.exports = function(container, directions) {
         .property('checked', false)
         .on('change', function(d) {
            if (this.checked) {
-               directions.query({'provider': 'mapbox'});
+               directions.query({provider: 'mapbox'});
            }
         });
 
