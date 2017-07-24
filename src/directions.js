@@ -1,6 +1,7 @@
 'use strict';
 
-var request = require('./request'),
+var postRequest = require('./post_request'),
+    getRequest = require('./get_request'),
     polyline = require('@mapbox/polyline'),
     d3 = require('../lib/d3'),
     queue = require('queue-async');
@@ -9,6 +10,7 @@ var Directions = L.Class.extend({
     includes: [L.Mixin.Events],
 
     options: {
+        provider: '',
         units: 'metric',
         mapbox_token: 'pk.eyJ1IjoibGxpdSIsImEiOiI4dW5uVkVJIn0.jhfpLn2Esk_6ZSG62yXYOg',
         ors_api_key: '58d904a497c67e00015b45fccf79677fabb0435874e4d8f94dc34eaa',
@@ -16,7 +18,7 @@ var Directions = L.Class.extend({
     },
 
     statics: {
-        MAPBOX_API_TEMPLATE: 'https://api.mapbox.com/directions/v5/mapbox/cycling/{waypoints}?access_token={token}',
+        MAPBOX_API_TEMPLATE: 'https://api.mapbox.com/directions/v5/mapbox/cycling/{waypoints}?geometries=polyline&access_token={token}',
         ORS_API_TEMPLATE: 'https://api.openrouteservice.org/directions?&coordinates={coordinates}&geometry_format=geojson&instructions=false&preference={preference}&profile={profile}&api_key={token}',
         GOOGLE_API_TEMPLATE: 'https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&avoid={avoid}&mode=bicycling&key={token}',
         GEOCODER_TEMPLATE: 'https://api.tiles.mapbox.com/v4/geocode/mapbox.places/{query}.json?proximity={proximity}&access_token={token}'
@@ -184,6 +186,7 @@ var Directions = L.Class.extend({
     },
 
     queryURL: function(opts) {
+        this.options.provider = opts.provider;
         if (opts.provider.toLowerCase() === 'mapbox')
             return this._queryMapboxURL(opts);
         if (opts.provider.toLowerCase() === 'openrouteservice')
@@ -197,21 +200,58 @@ var Directions = L.Class.extend({
     _queryMapboxURL: function(opts) {
         var template = Directions.MAPBOX_API_TEMPLATE,
             points = [this.origin].concat([this.destination])
-                .map(function(point) {
-                    return point.geometry.coordinates;
-                }).join(';');
+            .map(function(point) {
+                return point.geometry.coordinates;
+            }).join(';');
         return L.Util.template(template, {
             token: this.options.mapbox_token,
             waypoints: points
         });
     },
 
+    _constructMapboxResult: function(resp) {
+        this.directions = resp;
+        this.directions.origin = resp.waypoints[0];
+        this.directions.destination = resp.waypoints.slice(-1)[0];
+        this.directions.waypoints.forEach(function(wp) {
+            wp.geometry = {
+                type: "Point",
+                coordinates: wp.location
+            };
+            wp.properties = {
+                name: wp.name
+            };
+        });
+        this.directions.waypoints = resp.waypoints.slice(1, -1);
+        this.directions.routes.forEach(function(route) {
+            route.geometry = {
+                type: "LineString",
+                coordinates: polyline.decode(route.geometry)
+                    .map(function(c) {
+                        return c.reverse();
+                    })
+            };
+        });
+
+        if (!this.origin.properties.name) {
+            this.origin = this.directions.origin;
+        } else {
+            this.directions.origin = this.origin;
+        }
+
+        if (!this.destination.properties.name) {
+            this.destination = this.directions.destination;
+        } else {
+            this.directions.destination = this.destination;
+        }
+    },
+
     _queryOpenRouteServiceURL: function(opts) {
         var template = Directions.ORS_API_TEMPLATE,
             points = [this.origin].concat([this.destination])
-                .map(function(point) {
-                    return point.geometry.coordinates;
-                }).join('|');
+            .map(function(point) {
+                return point.geometry.coordinates;
+            }).join('|');
         return L.Util.template(template, {
             token: this.options.ors_api_key,
             coordinates: points,
@@ -235,7 +275,9 @@ var Directions = L.Class.extend({
     },
 
     query: function(opts) {
-        if (!opts) opts = {};
+        if (!opts) opts = {
+            provider: this.options.provider
+        };
         if (!this.queryable()) return this;
 
         if (this._query) {
@@ -243,8 +285,8 @@ var Directions = L.Class.extend({
         }
 
         if (this._requests && this._requests.length) this._requests
-            .forEach(function(request) {
-                request.abort();
+            .forEach(function(getRequest) {
+                getRequest.abort();
             });
         this._requests = [];
 
@@ -264,15 +306,9 @@ var Directions = L.Class.extend({
                 });
             }
 
-            var reqData = {
-                "id": 1,
-                "jsonrpc": "2.0",
-                "method": "air.getPaths"
-            };
-            reqData.params = [this.profile];
-
-            this._query = request(this.queryURL(opts),
-                reqData, L.bind(function(err, resp) {
+            this._query = getRequest(this.queryURL(
+                    opts),
+                L.bind(function(err, resp) {
                     this._query = null;
 
                     if (err) {
@@ -283,97 +319,19 @@ var Directions = L.Class.extend({
                             });
                     }
 
-                    this.directions = resp;
-                    this.directions.waypoints = [];
-                    this.directions.origin =
-                        resp.source;
-                    this.directions.destination =
-                        resp.target;
-                    this.directions.routes.forEach(
-                        function(route) {
-                            route.geometry =
-                                route.geojson;
-                            route.duration =
-                                route.duration *
-                                60;
-                            route.steps = [];
-                            var i = 0;
-                            for (i = 0; i <
-                                route.geojson
-                                .features.length; i++
-                            ) {
-                                var
-                                    stepInfo =
-                                    route.geojson
-                                    .features[
-                                        i];
-                                if (
-                                    stepInfo
-                                    .properties
-                                    .type ===
-                                    'path'
-                                ) {
-                                    route.steps
-                                        .push({
-                                            properties: route
-                                                .geojson
-                                                .features[
-                                                    i
-                                                ]
-                                                .properties,
-                                            loc: route
-                                                .geojson
-                                                .features[
-                                                    i
-                                                ]
-                                                .geometry
-                                                .coordinates[
-                                                    0
-                                                ]
-                                        });
-                                } else if (
-                                    stepInfo
-                                    .properties
-                                    .type ===
-                                    'switch_point'
-                                ) {
-                                    route.steps
-                                        .push({
-                                            properties: route
-                                                .geojson
-                                                .features[
-                                                    i
-                                                ]
-                                                .properties,
-                                            loc: route
-                                                .geojson
-                                                .features[
-                                                    i
-                                                ]
-                                                .geometry
-                                                .coordinates
-                                        });
-                                }
-                            }
-                        });
+                    if (this.options.provider ===
+                        'mapbox')
+                        this._constructMapboxResult(
+                            resp);
+                    if (this.options.provider ===
+                        'openrouteservice')
+                        this._constructOpenRouteServiceResult(
+                            resp);
+                    if (this.options.provider ===
+                        'google')
+                        this._constructGoogleResult(
+                            resp);
 
-                    if (!this.origin.properties
-                        .name) {
-                        this.origin = this.directions
-                            .origin;
-                    } else {
-                        this.directions.origin =
-                            this.origin;
-                    }
-
-                    if (!this.destination.properties
-                        .name) {
-                        this.destination =
-                            this.directions.destination;
-                    } else {
-                        this.directions.destination =
-                            this.destination;
-                    }
 
                     this.fire('load', this.directions);
                 }, this), this);

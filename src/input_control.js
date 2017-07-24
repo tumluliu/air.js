@@ -20,17 +20,21 @@ module.exports = function(container, directions) {
         .on('keypress', function() {
             if (d3.event.keyCode === 13) {
                 d3.event.preventDefault();
-
                 if (origChange)
                     directions.setOrigin(originInput.property('value'));
                 if (destChange)
-                    directions.setDestination(destinationInput.property('value'));
-
+                    directions.setDestination(destinationInput.property(
+                        'value'));
                 if (directions.queryable())
-                    directions.query({
-                        proximity: map.getCenter()
-                    });
-
+                    for (var key in directionProviders) {
+                        if (directionProviders.hasOwnProperty(key) &&
+                            directionProviders[key] === true) {
+                            directions.query({
+                                proximity: map.getCenter(),
+                                provider: key
+                            });
+                        }
+                    }
                 origChange = false;
                 destChange = false;
             }
@@ -66,10 +70,19 @@ module.exports = function(container, directions) {
         });
 
     form.append('span')
-        .attr('class', 'mapbox-directions-icon mapbox-reverse-icon mapbox-directions-reverse-input')
+        .attr('class',
+            'mapbox-directions-icon mapbox-reverse-icon mapbox-directions-reverse-input'
+        )
         .attr('title', 'Reverse origin & destination')
         .on('click', function() {
-            directions.reverse().query();
+            for (var key in directionProviders) {
+                if (directionProviders.hasOwnProperty(key) &&
+                    directionProviders[key] === true) {
+                    directions.reverse().query({
+                        provider: key
+                    });
+                }
+            }
         });
 
     var destination = form.append('div')
@@ -101,14 +114,16 @@ module.exports = function(container, directions) {
             directions.setDestination(undefined);
         });
 
+    var directionProviders = {
+        mapbox: false,
+        openrouteservice: false,
+        google: false
+    };
+
+    //Options block for Mapbox cycling path finding
     var mapboxDirections = form.append('div')
         .attr('id', 'mapbox-directions')
         .attr('class', 'mapbox-directions-profile');
-
-    mapboxDirections.append('h3')
-        .attr('value', 'MAPBOX')
-        .attr('style', 'margin: 5px 0px 0px 5px')
-        .text('MAPBOX DIRECTIONS');
 
     mapboxDirections.append('input')
         .attr('type', 'checkbox')
@@ -116,148 +131,97 @@ module.exports = function(container, directions) {
         .attr('id', 'show-mapbox-cycling')
         .property('checked', false)
         .on('change', function(d) {
-           if (this.checked) {
-               directions.query({provider: 'mapbox'});
-           }
+            if (this.checked) {
+                directionProviders.mapbox = true;
+                directions.query({
+                    provider: 'mapbox'
+                });
+            } else
+                directionProviders.mapbox = false;
         });
+
+    //mapboxDirections.append('h3')
+    //.attr('value', 'MAPBOX')
+    //.attr('style', 'margin: 5px 0px 0px 5px')
+    //.text('MAPBOX DIRECTIONS');
 
     mapboxDirections.append('label')
+        .attr('class', 'air-heading-label')
         .attr('for', 'show-mapbox-cycling')
+        .text('MAPBOX DIRECTIONS');
+
+    //Options block for OpenRouteService cycling path finding
+    var orsDirections = form.append('div')
+        .attr('id', 'ors-directions')
+        .attr('class', 'mapbox-directions-profile');
+
+    orsDirections.append('h3')
+        .attr('value', 'ORS')
+        .attr('style', 'margin: 5px 0px 0px 5px')
+        .text('OPENROUTESERVICE');
+
+    orsDirections.append('input')
+        .attr('type', 'checkbox')
+        .attr('name', 'enabled')
+        .attr('id', 'show-ors-cycling')
+        .property('checked', false)
+        .on('change', function(d) {
+            if (this.checked) {
+                directionProviders.openrouteservice = true;
+                directions.query({
+                    provider: 'openrouteservice'
+                });
+                orsCyclingOptions.property('disabled', false);
+            } else {
+                directionProviders.openrouteservice = false;
+                orsCyclingOptions.property('disabled', true);
+            }
+        });
+
+    orsDirections.append('label')
+        .attr('for', 'show-ors-cycling')
         .text('Show cycling path');
 
-    var car_profile = form.append('div')
-        .attr('id', 'air-car-profiles')
+    var orsCyclingOptions = orsDirections.append('ul');
+    orsCyclingOptions.append('li')
+        .append('div')
+        .append('input')
+        .attr('type', 'radio')
+        .attr('name', 'orsProfileBicycle')
+        .attr('id', 'ors-bicycle')
+        .on('change', function(d) {
+            alert(d);
+        })
+        .append('label').attr('for', 'ors-bicycle').text('Normal');
+
+    var googleDirections = form.append('div')
+        .attr('id', 'google-directions-profile')
         .attr('class', 'mapbox-directions-profile');
 
-    car_profile.append('h3')
-        .attr('value', 'DRIVING')
+    googleDirections.append('h3')
+        .attr('value', 'GOOGLE')
         .attr('style', 'margin: 5px 0px 0px 5px')
-        .text('DRIVING OPTIONS');
+        .text('GOOGLE MAPS DIRECTIONS');
 
-    car_profile.append('input')
+    googleDirections.append('input')
         .attr('type', 'checkbox')
-        .attr('name', 'profile')
-        .attr('id', 'air-profile-cycling')
-        .property('checked', true)
+        .attr('name', 'enabled')
+        .attr('id', 'show-google-cycling')
+        .property('checked', false)
         .on('change', function(d) {
             if (this.checked) {
-                carParking.property('disabled', false);
-                carParking.property('checked', true);
-                isDrivingDistLimited.property('disabled', false);
-                isDrivingDistLimited.property('checked', true);
-                distanceLimit.property('disabled', false);
+                directionProviders.google = true;
+                directions.query({
+                    provider: 'google'
+                });
             } else {
-                carParking.property('disabled', true);
-                carParking.property('checked', false);
-                isDrivingDistLimited.property('disabled', true);
-                isDrivingDistLimited.property('checked', false);
-                distanceLimit.property('disabled', true);
-            }
-            directions.setProfile('has_private_car', this.checked);
-        });
-
-    car_profile.append('label')
-        .attr('for', 'air-profile-private-car')
-        .text('Private car available on departure');
-
-    var carParking = car_profile.append('input')
-        .attr('type', 'checkbox')
-        .attr('name', 'profile')
-        .attr('id', 'air-profile-car-parking')
-        .property('checked', true)
-        .property('disabled', false)
-        .on('change', function(d) {
-            directions.setProfile('need_parking', this.checked);
-        });
-
-    car_profile.append('label')
-        .attr('for', 'air-profile-car-parking')
-        .text('Need parking for the car');
-
-    var isDrivingDistLimited = car_profile.append('input')
-        .attr('type', 'checkbox')
-        .attr('name', 'driving-profile')
-        .attr('id', 'driving-distance-limit')
-        .property('checked', true)
-        .on('change', function(d) {
-            if (this.checked) {
-                distanceLimit.property('disabled', false);
-            } else
-                distanceLimit.property('disabled', true);
-        });
-
-    car_profile.append('label')
-        .attr('for', 'driving-distance-limit')
-        .attr('style', 'width: 150px')
-        .text('Distance limit (km): ');
-
-    var distanceLimit = car_profile.append('input')
-        .attr('type', 'number')
-        .attr('min', '10')
-        .attr('max', '2617')
-        .property('value', '500')
-        .attr('id', 'air-driving-distance-limit')
-        .attr('style', 'width: 80px;padding-left: 10px;padding-top: 2px;padding-bottom: 2px;background-color: white;border: 1px solid rgba(0,0,0,0.1);height: 30px;vertical-align: middle;');
-
-    var public_profile = form.append('div')
-        .attr('id', 'air-public-profiles')
-        .attr('class', 'mapbox-directions-profile');
-
-    public_profile.append('h3')
-        .attr('value', 'PUBLIC TRANSIT')
-        .attr('style', 'margin: 5px 0px 0px 5px')
-        .text('PUBLIC TRANSIT PREFERENCES');
-
-    var public_profiles = public_profile.selectAll('span')
-        .data([
-            ['air.suburban', 'suburban', 'Suburban'],
-            ['air.underground', 'underground', 'Underground'],
-            ['air.tram', 'tram', 'Tram']
-        ])
-        .enter()
-        .append('span');
-
-    public_profiles.append('input')
-        .attr('type', 'checkbox')
-        .attr('name', 'profile')
-        .attr('id', function(d) {
-            return 'air-profile-' + d[1];
-        })
-        .property('checked', function(d, i) {
-            return i === 1;
-        })
-        .on('change', function(d) {
-            if (this.checked) {
-                publicTransitSelection.push(d[1]);
-            } else {
-                var index = publicTransitSelection.indexOf(d[1]);
-                if (index > -1) {
-                    publicTransitSelection.splice(index, 1);
-                }
+                directionProviders.google = false;
             }
         });
 
-    public_profiles.append('label')
-        .attr('for', function(d) {
-            return 'air-profile-' + d[1];
-        })
-        .text(function(d) {
-            return d[2];
-        });
-
-    public_profile.append('input')
-        .attr('type', 'button')
-        .attr('value', 'Find multimodal paths')
-        .attr('name', 'find paths')
-        .attr('id', 'find-mmpaths')
-        .attr('class', 'button')
-        .on('click', function(d) {
-            if (isDrivingDistLimited.property('checked') === true) {
-                directions.setProfile('driving_distance_limit', distanceLimit.property('value'));
-            }
-            directions.setProfile('available_public_modes', publicTransitSelection);
-            directions.query();
-        });
+    googleDirections.append('label')
+        .attr('for', 'show-google-cycling')
+        .text('Show cycling path');
 
     function format(waypoint) {
         if (!waypoint) {
@@ -265,9 +229,13 @@ module.exports = function(container, directions) {
         } else if (waypoint.properties.name) {
             return waypoint.properties.name;
         } else if (waypoint.geometry.coordinates) {
-            var precision = Math.max(0, Math.ceil(Math.log(map.getZoom()) / Math.LN2));
-            return waypoint.geometry.coordinates[0].toFixed(precision) + ', ' +
-                waypoint.geometry.coordinates[1].toFixed(precision);
+            var precision = Math.max(0, Math.ceil(Math.log(map
+                    .getZoom()) /
+                Math.LN2));
+            return waypoint.geometry.coordinates[0].toFixed(
+                    precision) + ', ' +
+                waypoint.geometry.coordinates[1].toFixed(
+                    precision);
         } else {
             return waypoint.properties.query || '';
         }
