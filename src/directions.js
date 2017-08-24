@@ -1,63 +1,41 @@
 "use strict";
 
-var postRequest = require("./post_request"),
-    getRequest = require("./get_request"),
+var getRequest = require("./get_request"),
     polyline = require("@mapbox/polyline"),
-    d3 = require("../lib/d3"),
     queue = require("queue-async");
 
 var Directions = L.Class.extend({
     includes: [L.Mixin.Events],
 
     options: {
-        provider: "",
-        units: "metric",
-        mapbox_token:
-            "pk.eyJ1IjoibGxpdSIsImEiOiI4dW5uVkVJIn0.jhfpLn2Esk_6ZSG62yXYOg",
-        ors_api_key: "58d904a497c67e00015b45fcf243eacf4b25434c6e28d7fd61c9d309",
-        google_api_key: "AIzaSyDc2gadWI4nunYb0i5Mx_P3AH_yDTiMzAY"
-    },
-
-    statics: {
-        MAPBOX_API_TEMPLATE:
-            "https://api.mapbox.com/directions/v5/mapbox/cycling/{waypoints}?geometries=polyline&access_token={token}",
-        ORS_API_TEMPLATE:
-            "https://api.openrouteservice.org/directions?&coordinates={coordinates}&geometry_format=geojson&instructions=false&preference={preference}&profile={profile}&api_key={token}",
-        GOOGLE_API_TEMPLATE:
-            "https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&mode=bicycling&key={token}",
-        GEOCODER_TEMPLATE:
-            "https://api.tiles.mapbox.com/v4/geocode/mapbox.places/{query}.json?proximity={proximity}&access_token={token}"
+        provider: "openrouteservice",
+        mapbox: {
+            api_template:
+                "https://api.mapbox.com/directions/v5/mapbox/cycling/{waypoints}?geometries=polyline&access_token={token}",
+            geocoder_template:
+                "https://api.tiles.mapbox.com/v4/geocode/mapbox.places/{query}.json?proximity={proximity}&access_token={token}",
+            key:
+                "pk.eyJ1IjoibGxpdSIsImEiOiI4dW5uVkVJIn0.jhfpLn2Esk_6ZSG62yXYOg",
+            profile: "cycling"
+        },
+        openrouteservice: {
+            api_template:
+                "https://api.openrouteservice.org/directions?&coordinates={coordinates}&instructions=false&preference={preference}&profile={profile}&api_key={token}",
+            key: "58d904a497c67e00015b45fcf243eacf4b25434c6e28d7fd61c9d309",
+            preference: "",
+            profile: "cycling-regular"
+        },
+        google: {
+            api_template:
+                "https://luliu.me/gmapswrapper?origin={origin}&destination={destination}&mode=bicycling&key={token}",
+            key: "AIzaSyDc2gadWI4nunYb0i5Mx_P3AH_yDTiMzAY",
+            profile: "bicycling"
+        }
     },
 
     initialize: function(options) {
         L.setOptions(this, options);
         this._waypoints = [];
-        this.profile = {
-            available_public_modes: ["underground"],
-            can_use_taxi: false,
-            has_bicycle: false,
-            has_motorcycle: false,
-            has_private_car: true,
-            need_parking: true,
-            objective: "fastest",
-            driving_distance_limit: 500,
-            source: {
-                type: "coordinate",
-                value: {
-                    x: 0.0,
-                    y: 0.0,
-                    srid: 4326
-                }
-            },
-            target: {
-                type: "coordinate",
-                value: {
-                    x: 0.0,
-                    y: 0.0,
-                    srid: 4326
-                }
-            }
-        };
     },
 
     getOrigin: function() {
@@ -80,11 +58,6 @@ var Directions = L.Class.extend({
             this._unload();
         }
 
-        if (origin) {
-            this.profile.source.value.x = this.origin.geometry.coordinates[0];
-            this.profile.source.value.y = this.origin.geometry.coordinates[1];
-        }
-
         return this;
     },
 
@@ -100,22 +73,6 @@ var Directions = L.Class.extend({
             this._unload();
         }
 
-        if (destination) {
-            this.profile.target.value.x = this.destination.geometry.coordinates[0];
-            this.profile.target.value.y = this.destination.geometry.coordinates[1];
-        }
-
-        return this;
-    },
-
-    getProfile: function() {
-        //return this.profile || this.options.profile || 'mapbox.driving';
-        return this.profile;
-    },
-
-    setProfile: function(key, value) {
-        this.profile[key] = value;
-        //this.fire('profile', {profile: profile});
         return this;
     },
 
@@ -185,92 +142,100 @@ var Directions = L.Class.extend({
     },
 
     queryURL: function(opts) {
-        this.options.provider = opts.provider;
-        if (opts.provider.toLowerCase() === "mapbox")
-            return this._queryMapboxURL(opts);
-        if (opts.provider.toLowerCase() === "openrouteservice")
-            return this._queryOpenRouteServiceURL(opts);
-        if (opts.provider.toLowerCase() === "google")
-            return this._queryGoogleURL(opts);
+        this.options.provider = opts.provider.toLowerCase();
+        var template = this.options[this.options.provider].api_template;
+        var points = "";
+        if (this.options.provider === "mapbox") {
+            points = [this.getOrigin(), this.getDestination()]
+                .map(function(p) {
+                    return p.geometry.coordinates;
+                })
+                .join(";");
+            return L.Util.template(template, {
+                token: this.options.mapbox.key,
+                waypoints: points
+            });
+        }
+        if (this.options.provider === "openrouteservice") {
+            points = [this.getOrigin(), this.getDestination()]
+                .map(function(p) {
+                    return p.geometry.coordinates;
+                })
+                .join("|");
+            if (opts.hasOwnProperty("preference")) {
+                this.options.openrouteservice.preference = opts.preference;
+            }
+            if (opts.hasOwnProperty("profile")) {
+                this.options.openrouteservice.profile = opts.profile;
+            }
+            return L.Util.template(template, {
+                token: this.options.openrouteservice.key,
+                coordinates: points,
+                preference: this.options.openrouteservice.preference,
+                profile: this.options.openrouteservice.profile
+            });
+        }
+        if (this.options.provider === "google") {
+            var origin_coords = this.getOrigin().geometry.coordinates.slice();
+            var dest_coords = this.getDestination().geometry.coordinates.slice();
+            return L.Util.template(template, {
+                token: this.options.google.key,
+                origin: origin_coords.reverse().join(","),
+                destination: dest_coords.reverse().join(",")
+            });
+        }
 
         return null;
     },
 
-    _queryMapboxURL: function(opts) {
-        var template = Directions.MAPBOX_API_TEMPLATE,
-            points = [this.origin]
-                .concat([this.destination])
-                .map(function(point) {
-                    return point.geometry.coordinates;
-                })
-                .join(";");
-        return L.Util.template(template, {
-            token: this.options.mapbox_token,
-            waypoints: points
-        });
-    },
-
-    _constructMapboxResult: function(resp) {
+    _constructRoutingResult: function(resp, provider) {
         this.directions = resp;
-        this.directions.origin = resp.waypoints[0];
-        this.directions.destination = resp.waypoints.slice(-1)[0];
-        this.directions.waypoints.forEach(function(wp) {
-            wp.geometry = {
-                type: "Point",
-                coordinates: wp.location
-            };
-            wp.properties = {
-                name: wp.name
-            };
-        });
-        this.directions.waypoints = resp.waypoints.slice(1, -1);
-        this.directions.routes.forEach(function(route) {
-            route.geometry = {
-                type: "LineString",
-                coordinates: polyline.decode(route.geometry).map(function(c) {
-                    return c.reverse();
-                })
-            };
-        });
-
-        if (!this.origin.properties.name) {
-            this.origin = this.directions.origin;
-        } else {
+        if (provider === "mapbox") {
+            this.directions.origin = resp.waypoints[0];
+            this.directions.destination = resp.waypoints.slice(-1)[0];
+            this.directions.waypoints.forEach(function(wp) {
+                wp.geometry = {
+                    type: "Point",
+                    coordinates: wp.location
+                };
+                wp.properties = {
+                    name: wp.name
+                };
+            });
+            this.directions.waypoints = resp.waypoints.slice(1, -1);
+        }
+        if (provider === "openrouteservice") {
+            this.directions.origin = resp.info.query.coordinates[0];
+            this.directions.destination = resp.info.query.coordinates[1];
+            this.directions.waypoints = [];
+        }
+        if (provider === "mapbox" || provider === "openrouteservice") {
+            this.directions.routes.forEach(function(route) {
+                route.geometry = {
+                    type: "LineString",
+                    coordinates: polyline
+                        .decode(route.geometry)
+                        .map(function(c) {
+                            return c.reverse();
+                        })
+                };
+            });
+        }
+        if (provider === "google") {
             this.directions.origin = this.origin;
-        }
-
-        if (!this.destination.properties.name) {
-            this.destination = this.directions.destination;
-        } else {
             this.directions.destination = this.destination;
+            this.directions.waypoints = [];
+            this.directions.routes.forEach(function(route) {
+                route.geometry = {
+                    type: "LineString",
+                    coordinates: polyline
+                        .decode(route.overview_polyline.points)
+                        .map(function(c) {
+                            return c.reverse();
+                        })
+                };
+            });
         }
-    },
-
-    _queryOpenRouteServiceURL: function(opts) {
-        var template = Directions.ORS_API_TEMPLATE,
-            points = [this.origin]
-                .concat([this.destination])
-                .map(function(point) {
-                    return point.geometry.coordinates;
-                })
-                .join("|");
-        return L.Util.template(template, {
-            token: this.options.ors_api_key,
-            coordinates: points,
-            preference: opts.preference,
-            profile: opts.profile
-        });
-    },
-
-    _queryGoogleURL: function(opts) {
-        var template = Directions.GOOGLE_API_TEMPLATE;
-        var origin_coords = this.getOrigin().geometry.coordinates.slice();
-        var dest_coords = this.getDestination().geometry.coordinates.slice();
-        return L.Util.template(template, {
-            token: this.options.google_api_key,
-            origin: origin_coords.reverse().join(","),
-            destination: dest_coords.reverse().join(",")
-        });
     },
 
     queryable: function() {
@@ -282,8 +247,6 @@ var Directions = L.Class.extend({
             opts = {
                 provider: this.options.provider
             };
-        opts.preference = "";
-        opts.profile = "cycling-regular";
         if (!this.queryable()) return this;
 
         if (this._query) {
@@ -300,7 +263,10 @@ var Directions = L.Class.extend({
 
         var pts = [this.origin, this.destination].concat(this._waypoints);
         for (var i in pts) {
-            if (!pts[i].geometry.coordinates) {
+            if (
+                !pts[i].geometry.coordinates ||
+                !pts[i].properties.hasOwnProperty("name")
+            ) {
                 q.defer(L.bind(this._geocode, this), pts[i], opts.proximity);
             }
         }
@@ -324,12 +290,21 @@ var Directions = L.Class.extend({
                             });
                         }
 
-                        if (this.options.provider === "mapbox")
-                            this._constructMapboxResult(resp);
-                        if (this.options.provider === "openrouteservice")
-                            this._constructOpenRouteServiceResult(resp);
-                        if (this.options.provider === "google")
-                            this._constructGoogleResult(resp);
+                        this._constructRoutingResult(
+                            resp,
+                            this.options.provider
+                        );
+                        if (!this.origin.properties.name) {
+                            this.origin = this.directions.origin;
+                        } else {
+                            this.directions.origin = this.origin;
+                        }
+
+                        if (!this.destination.properties.name) {
+                            this.destination = this.directions.destination;
+                        } else {
+                            this.directions.destination = this.destination;
+                        }
 
                         this.fire("load", this.directions);
                     }, this),
@@ -345,9 +320,9 @@ var Directions = L.Class.extend({
         if (!this._requests) this._requests = [];
         this._requests.push(
             getRequest(
-                L.Util.template(Directions.GEOCODER_TEMPLATE, {
+                L.Util.template(this.options.mapbox.geocoder_template, {
                     query: waypoint.properties.query,
-                    token: this.options.accessToken || L.mapbox.accessToken,
+                    token: this.options.mapbox.key || L.mapbox.accessToken,
                     proximity: proximity
                         ? [proximity.lng, proximity.lat].join(",")
                         : ""
