@@ -8,7 +8,9 @@ var Directions = L.Class.extend({
     includes: [L.Mixin.Events],
 
     options: {
-        provider: "openrouteservice",
+        available_providers: ["mapbox", "google", "openrouteservice"],
+        enabled_providers: [],
+        unit: "meters",
         mapbox: {
             api_template:
                 "https://api.mapbox.com/directions/v5/mapbox/cycling/{waypoints}?geometries=polyline&access_token={token}",
@@ -45,6 +47,13 @@ var Directions = L.Class.extend({
                 "stroke-opacity": 0.78,
                 "stroke-width": 5
             }
+        }
+    },
+
+    directions: {
+        routes: {
+            type: "FeatureCollection",
+            features: []
         }
     },
 
@@ -139,6 +148,7 @@ var Directions = L.Class.extend({
     },
 
     selectTrack: function(track) {
+        this._clearResultRoutes();
         this.fire("selectTrack", {
             track: track.GeoJSON
         });
@@ -156,11 +166,38 @@ var Directions = L.Class.extend({
         });
     },
 
+    enableProvider: function(provider, is_enabled) {
+        if (
+            this.options.available_providers.indexOf(provider) > -1 &&
+            this.options.enabled_providers.indexOf(provider) === -1 &&
+            is_enabled
+        ) {
+            this.options.enabled_providers.push(provider);
+        }
+        if (
+            this.options.available_providers.indexOf(provider) > -1 &&
+            this.options.enabled_providers.indexOf(provider) > -1 &&
+            !is_enabled
+        ) {
+            var i = this.options.enabled_providers.indexOf(provider);
+            if (i > -1) {
+                this.options.enabled_providers.splice(i, 1);
+            }
+        }
+        this.directions.routes.features = [];
+        this.options.enabled_providers.forEach(function(p) {
+            this.directions.routes.features.push(
+                this.directions[p].routes[0].geometry
+            );
+        }, this);
+        this.fire("load", this.directions);
+    },
+
     queryURL: function(opts) {
-        this.options.provider = opts.provider.toLowerCase();
-        var template = this.options[this.options.provider].api_template;
+        var provider = opts.provider.toLowerCase();
+        var template = this.options[provider].api_template;
         var points = "";
-        if (this.options.provider === "mapbox") {
+        if (provider === "mapbox") {
             points = [this.getOrigin(), this.getDestination()]
                 .map(function(p) {
                     return p.geometry.coordinates;
@@ -171,7 +208,7 @@ var Directions = L.Class.extend({
                 waypoints: points
             });
         }
-        if (this.options.provider === "openrouteservice") {
+        if (provider === "openrouteservice") {
             points = [this.getOrigin(), this.getDestination()]
                 .map(function(p) {
                     return p.geometry.coordinates;
@@ -190,7 +227,7 @@ var Directions = L.Class.extend({
                 profile: this.options.openrouteservice.profile
             });
         }
-        if (this.options.provider === "google") {
+        if (provider === "google") {
             var origin_coords = this.getOrigin().geometry.coordinates.slice();
             var dest_coords = this.getDestination().geometry.coordinates.slice();
             return L.Util.template(template, {
@@ -203,12 +240,29 @@ var Directions = L.Class.extend({
         return null;
     },
 
+    _clearResultRoutes: function() {
+        this.options.available_providers.forEach(function(p) {
+            if (this.directions.hasOwnProperty(p)) {
+                this.directions[p] = undefined;
+            }
+        }, this);
+        this.options.enabled_providers = [];
+        this.directions.routes = {
+            type: "FeatureCollection",
+            features: []
+        };
+        this.fire("checkmapbox", { checked: false });
+        this.fire("checkgoogle", { checked: false });
+        this.fire("checkors", { checked: false });
+    },
+
     _constructRoutingResult: function(resp, provider) {
-        this.directions = resp;
+        this.directions[provider] = resp;
+        this.directions[provider].enabled = true;
         if (provider === "mapbox") {
-            this.directions.origin = resp.waypoints[0];
-            this.directions.destination = resp.waypoints.slice(-1)[0];
-            this.directions.waypoints.forEach(function(wp) {
+            this.directions[provider].origin = resp.waypoints[0];
+            this.directions[provider].destination = resp.waypoints.slice(-1)[0];
+            this.directions[provider].waypoints.forEach(function(wp) {
                 wp.geometry = {
                     type: "Point",
                     coordinates: wp.location
@@ -217,18 +271,19 @@ var Directions = L.Class.extend({
                     name: wp.name
                 };
             });
-            this.directions.waypoints = resp.waypoints.slice(1, -1);
+            this.directions[provider].waypoints = resp.waypoints.slice(1, -1);
         }
         if (provider === "openrouteservice") {
-            this.directions.origin = resp.info.query.coordinates[0];
-            this.directions.destination = resp.info.query.coordinates[1];
-            this.directions.waypoints = [];
+            this.directions[provider].origin = resp.info.query.coordinates[0];
+            this.directions[provider].destination =
+                resp.info.query.coordinates[1];
+            this.directions[provider].waypoints = [];
         }
         if (provider === "mapbox" || provider === "openrouteservice") {
-            this.directions.routes.forEach(function(route) {
+            this.directions[provider].routes.forEach(function(route) {
                 route.geometry = {
                     type: "Feature",
-                    properties: this.options[this.options.provider].path_style,
+                    properties: this.options[provider].path_style,
                     geometry: {
                         type: "LineString",
                         coordinates: polyline
@@ -241,13 +296,13 @@ var Directions = L.Class.extend({
             }, this);
         }
         if (provider === "google") {
-            this.directions.origin = this.origin;
-            this.directions.destination = this.destination;
-            this.directions.waypoints = [];
-            this.directions.routes.forEach(function(route) {
+            this.directions[provider].origin = this.origin;
+            this.directions[provider].destination = this.destination;
+            this.directions[provider].waypoints = [];
+            this.directions[provider].routes.forEach(function(route) {
                 route.geometry = {
                     type: "Feature",
-                    properties: this.options[this.options.provider].path_style,
+                    properties: this.options[provider].path_style,
                     geometry: {
                         type: "LineString",
                         coordinates: polyline
@@ -266,10 +321,7 @@ var Directions = L.Class.extend({
     },
 
     query: function(opts) {
-        if (!opts)
-            opts = {
-                provider: this.options.provider
-            };
+        if (!opts) return this;
         if (!this.queryable()) return this;
 
         if (this._query) {
@@ -313,10 +365,7 @@ var Directions = L.Class.extend({
                             });
                         }
 
-                        this._constructRoutingResult(
-                            resp,
-                            this.options.provider
-                        );
+                        this._constructRoutingResult(resp, opts.provider);
                         if (!this.origin.properties.name) {
                             this.origin = this.directions.origin;
                         } else {
@@ -328,8 +377,7 @@ var Directions = L.Class.extend({
                         } else {
                             this.directions.destination = this.destination;
                         }
-
-                        this.fire("load", this.directions);
+                        this.enableProvider(opts.provider, true);
                     }, this),
                     this
                 );

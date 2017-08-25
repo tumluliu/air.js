@@ -136,7 +136,7 @@ module.exports = function(container, directions) {
         .attr("id", "mapbox-directions")
         .attr("class", "mapbox-directions-profile");
 
-    mapboxDirections
+    var checkboxMapbox = mapboxDirections
         .append("input")
         .attr("type", "checkbox")
         .attr("name", "enabled")
@@ -148,7 +148,10 @@ module.exports = function(container, directions) {
                 directions.query({
                     provider: "mapbox"
                 });
-            } else directionProviders.mapbox = false;
+            } else {
+                directionProviders.mapbox = false;
+                directions.enableProvider("mapbox", false);
+            }
         });
 
     //mapboxDirections.append('h3')
@@ -167,7 +170,7 @@ module.exports = function(container, directions) {
         .attr("id", "google-directions-profile")
         .attr("class", "mapbox-directions-profile");
 
-    googleDirections
+    var checkboxGoogle = googleDirections
         .append("input")
         .attr("type", "checkbox")
         .attr("name", "enabled")
@@ -181,6 +184,7 @@ module.exports = function(container, directions) {
                 });
             } else {
                 directionProviders.google = false;
+                directions.enableProvider("google", false);
             }
         });
 
@@ -196,7 +200,7 @@ module.exports = function(container, directions) {
         .attr("id", "ors-directions")
         .attr("class", "mapbox-directions-profile");
 
-    orsDirections
+    var checkboxORS = orsDirections
         .append("input")
         .attr("type", "checkbox")
         .attr("name", "enabled")
@@ -211,6 +215,7 @@ module.exports = function(container, directions) {
                 orsCyclingOptions.property("disabled", false);
             } else {
                 directionProviders.openrouteservice = false;
+                directions.enableProvider("openrouteservice", false);
                 orsCyclingOptions.property("disabled", true);
             }
         });
@@ -221,20 +226,72 @@ module.exports = function(container, directions) {
         .attr("for", "show-ors-cycling")
         .text("OPENROUTESERVICE");
 
-    var orsCyclingOptions = orsDirections.append("ul");
-    orsCyclingOptions
-        .append("li")
-        .append("div")
+    var orsCyclingOptions = orsDirections.append("div");
+    var orsCyclingRegular = orsCyclingOptions
         .append("input")
         .attr("type", "radio")
         .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle")
+        .attr("id", "ors-bicycle-regular")
+        .attr("value", "cycling-regular")
+        .text("Normal")
         .on("change", function(d) {
             alert(d);
-        })
-        .append("label")
-        .attr("for", "ors-bicycle")
-        .text("Normal");
+        });
+
+    var orsCyclingSafe = orsCyclingOptions
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "orsProfileBicycle")
+        .attr("id", "ors-bicycle-safe")
+        .attr("value", "cycling-safe")
+        .text("Safest")
+        .on("change", function(d) {
+            alert(d);
+        });
+
+    var orsCyclingTour = orsCyclingOptions
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "orsProfileBicycle")
+        .attr("id", "ors-bicycle-tour")
+        .attr("value", "cycling-tour")
+        .text("Touring bike")
+        .on("change", function(d) {
+            alert(d);
+        });
+
+    var orsCyclingMountain = orsCyclingOptions
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "orsProfileBicycle")
+        .attr("id", "ors-bicycle-mountain")
+        .attr("value", "cycling-mountain")
+        .text("Mountain bike")
+        .on("change", function(d) {
+            alert(d);
+        });
+
+    var orsCyclingRoad = orsCyclingOptions
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "orsProfileBicycle")
+        .attr("id", "ors-bicycle-road")
+        .attr("value", "cycling-road")
+        .text("Road bike")
+        .on("change", function(d) {
+            alert(d);
+        });
+
+    var orsCyclingElectric = orsCyclingOptions
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "orsProfileBicycle")
+        .attr("id", "ors-bicycle-electric")
+        .attr("value", "cycling-electric")
+        .text("e-bike")
+        .on("change", function(d) {
+            alert(d);
+        });
 
     function format(waypoint) {
         if (!waypoint) {
@@ -262,6 +319,15 @@ module.exports = function(container, directions) {
         })
         .on("destination", function(e) {
             destinationInput.property("value", format(e.destination));
+        })
+        .on("checkmapbox", function(e) {
+            checkboxMapbox.property("checked", false);
+        })
+        .on("checkgoogle", function(e) {
+            checkboxGoogle.property("checked", false);
+        })
+        .on("checkors", function(e) {
+            checkboxORS.property("checked", false);
         })
         .on("load", function(e) {
             originInput.property("value", format(e.origin));
