@@ -16,20 +16,35 @@ var Directions = L.Class.extend({
                 "https://api.tiles.mapbox.com/v4/geocode/mapbox.places/{query}.json?proximity={proximity}&access_token={token}",
             key:
                 "pk.eyJ1IjoibGxpdSIsImEiOiI4dW5uVkVJIn0.jhfpLn2Esk_6ZSG62yXYOg",
-            profile: "cycling"
+            profile: "cycling",
+            path_style: {
+                stroke: "#4264fb",
+                "stroke-opacity": 0.78,
+                "stroke-width": 5
+            }
         },
         openrouteservice: {
             api_template:
-                "https://api.openrouteservice.org/directions?&coordinates={coordinates}&instructions=false&preference={preference}&profile={profile}&api_key={token}",
+                "https://api.openrouteservice.org/corsdirections?&coordinates={coordinates}&instructions=false&preference={preference}&profile={profile}&api_key={token}",
             key: "58d904a497c67e00015b45fcf243eacf4b25434c6e28d7fd61c9d309",
             preference: "",
-            profile: "cycling-regular"
+            profile: "cycling-regular",
+            path_style: {
+                stroke: "#cf5f5f",
+                "stroke-opacity": 0.78,
+                "stroke-width": 5
+            }
         },
         google: {
             api_template:
                 "https://luliu.me/gmapswrapper?origin={origin}&destination={destination}&mode=bicycling&key={token}",
             key: "AIzaSyDc2gadWI4nunYb0i5Mx_P3AH_yDTiMzAY",
-            profile: "bicycling"
+            profile: "bicycling",
+            path_style: {
+                stroke: "#0f9d58",
+                "stroke-opacity": 0.78,
+                "stroke-width": 5
+            }
         }
     },
 
@@ -161,7 +176,7 @@ var Directions = L.Class.extend({
                 .map(function(p) {
                     return p.geometry.coordinates;
                 })
-                .join("|");
+                .join("%7C");
             if (opts.hasOwnProperty("preference")) {
                 this.options.openrouteservice.preference = opts.preference;
             }
@@ -212,14 +227,18 @@ var Directions = L.Class.extend({
         if (provider === "mapbox" || provider === "openrouteservice") {
             this.directions.routes.forEach(function(route) {
                 route.geometry = {
-                    type: "LineString",
-                    coordinates: polyline
-                        .decode(route.geometry)
-                        .map(function(c) {
-                            return c.reverse();
-                        })
+                    type: "Feature",
+                    properties: this.options[this.options.provider].path_style,
+                    geometry: {
+                        type: "LineString",
+                        coordinates: polyline
+                            .decode(route.geometry)
+                            .map(function(c) {
+                                return c.reverse();
+                            })
+                    }
                 };
-            });
+            }, this);
         }
         if (provider === "google") {
             this.directions.origin = this.origin;
@@ -227,14 +246,18 @@ var Directions = L.Class.extend({
             this.directions.waypoints = [];
             this.directions.routes.forEach(function(route) {
                 route.geometry = {
-                    type: "LineString",
-                    coordinates: polyline
-                        .decode(route.overview_polyline.points)
-                        .map(function(c) {
-                            return c.reverse();
-                        })
+                    type: "Feature",
+                    properties: this.options[this.options.provider].path_style,
+                    geometry: {
+                        type: "LineString",
+                        coordinates: polyline
+                            .decode(route.overview_polyline.points)
+                            .map(function(c) {
+                                return c.reverse();
+                            })
+                    }
                 };
-            });
+            }, this);
         }
     },
 
