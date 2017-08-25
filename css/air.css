@@ -35,8 +35,6 @@
     -webkit-margin-end: 0px;
 }
 
-
-
 /* Inputs */
 
 .mapbox-directions-origin,
@@ -104,7 +102,7 @@
     cursor: pointer;
 }
 
-input:not(:valid)+.mapbox-close-icon {
+input:not(:valid) + .mapbox-close-icon {
     display: none;
 }
 
@@ -119,6 +117,7 @@ input:not(:valid)+.mapbox-close-icon {
     border-radius: 2px;
     vertical-align: middle;
     background: rgba(255, 255, 255, .8);
+    height: fit-content;
 }
 
 .mapbox-directions-profile label {
@@ -136,7 +135,10 @@ input:not(:valid)+.mapbox-close-icon {
 
 .mapbox-directions-profile input[type=radio] {
     background-color: transparent;
-    display: none;
+    margin-left: 10px;
+    margin-top: 1px;
+    margin-right: 5px;
+    margin-bottom: 1px;
 }
 
 .mapbox-directions-profile input[type=checkbox] {
@@ -148,12 +150,12 @@ input:not(:valid)+.mapbox-close-icon {
     margin-left: 5px;
 }
 
-.mapbox-directions-profile input[type=radio]:checked+label {
+.mapbox-directions-profile input[type=radio]:checked + label {
     background: white;
     color: rgba(0, 0, 0, .5);
 }
 
-.mapbox-directions-profile input[type=checkbox]+label {
+.mapbox-directions-profile input[type=checkbox] + label {
     background-color: transparent;
     vertical-align: middle;
     text-align: left;
@@ -209,7 +211,6 @@ input:not(:valid)+.mapbox-close-icon {
     box-shadow: none;
 }
 
-
 /* Errors */
 
 .mapbox-directions-error {
@@ -217,7 +218,6 @@ input:not(:valid)+.mapbox-close-icon {
     display: inline-block;
     padding: 0 5px;
 }
-
 
 /* Routes */
 
@@ -261,7 +261,6 @@ input:not(:valid)+.mapbox-close-icon {
     font-size: 12px;
     color: rgba(255, 255, 255, .5);
 }
-
 
 /* Instructions */
 
@@ -307,7 +306,6 @@ input:not(:valid)+.mapbox-close-icon {
 .mapbox-directions-step:last-child .mapbox-directions-step-distance {
     display: none;
 }
-
 
 /* icons */
 
@@ -399,24 +397,18 @@ input:not(:valid)+.mapbox-close-icon {
 }
 
 .mapbox-marker-drag-icon-step {
-    background-color: #3BB2D0;
+    background-color: #3bb2d0;
 }
-
 
 /* leaflet overrides */
 
-
 /*path.leaflet-clickable {*/
-
 
 /*stroke: #3BB2D0;*/
 
-
 /*stroke-width: 4px;*/
 
-
 /*stroke-opacity:.75;*/
-
 
 /*}*/
 
