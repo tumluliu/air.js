@@ -428,7 +428,7 @@ table.air-tracks thead {
     overflow-y: scroll;
     display: table;
     table-layout: fixed;
-    width: calc(100% - 16px);
+    /* width: calc(100% - 16px); */
     /* assuming scrollbar width as 16px */
 }
 
@@ -443,4 +443,9 @@ table.air-tracks tr {
     text-align: left;
     display: table;
     table-layout: fixed;
+}
+
+table.air-tracks tr.selected {
+    background-color: #9c9b9b;
+    opacity: .8;
 }
