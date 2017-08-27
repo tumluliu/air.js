@@ -154,16 +154,11 @@ module.exports = function(container, directions) {
             }
         });
 
-    //mapboxDirections.append('h3')
-    //.attr('value', 'MAPBOX')
-    //.attr('style', 'margin: 5px 0px 0px 5px')
-    //.text('MAPBOX DIRECTIONS');
-
     mapboxDirections
         .append("label")
         .attr("class", "air-heading-label")
         .attr("for", "show-mapbox-cycling")
-        .text("MAPBOX DIRECTIONS");
+        .text("MAPBOX");
 
     var googleDirections = form
         .append("div")
@@ -192,7 +187,7 @@ module.exports = function(container, directions) {
         .append("label")
         .attr("class", "air-heading-label")
         .attr("for", "show-google-cycling")
-        .text("GOOGLE MAPS");
+        .text("GOOGLE");
 
     //Options block for OpenRouteService cycling path finding
     var orsDirections = form

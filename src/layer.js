@@ -1,7 +1,5 @@
 "use strict";
 
-var debounce = require("debounce");
-
 var Layer = L.LayerGroup.extend({
     options: {
         readonly: false

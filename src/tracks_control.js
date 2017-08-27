@@ -7,8 +7,6 @@ var tableControl = require("./table_control.js"),
 module.exports = function(container, directions) {
     var control = {},
         map;
-    var origChange = false,
-        destChange = false;
     var TRACKINFO_API_URL = "https://luliu.me/tracks/api/v1/trackinfo";
     var TRACK_API_URL = "https://luliu.me/tracks/api/v1/tracks";
 
@@ -48,13 +46,31 @@ module.exports = function(container, directions) {
             "End lon",
             "End lat"
         ],
+        trackinfoHeaders = [
+            "id",
+            "seg",
+            "2d_len",
+            "3d_len",
+            "moving",
+            "stopped",
+            "max_speed",
+            "uphill",
+            "downhill",
+            "started",
+            "ended",
+            "points",
+            "A_lon",
+            "A_lat",
+            "B_lon",
+            "B_lat"
+        ],
         values = [];
     var page = 1,
         totalPages = 1,
         numResults = 1;
     var tc = new tableControl(
         document.getElementById("tracks-table"),
-        trackinfoKeys,
+        trackinfoHeaders,
         values
     );
     var pg = new pagingControl(document.getElementById("paging"), {
@@ -104,6 +120,18 @@ module.exports = function(container, directions) {
         trackXhr.onreadystatechange = function() {
             if (trackXhr.readyState === 4 && trackXhr.status === 200) {
                 var trackData = JSON.parse(trackXhr.responseText);
+                var geometry = trackData.GeoJSON;
+                var trackStyle = {
+                    stroke: "#555555",
+                    "stroke-opacity": 0.78,
+                    "stroke-width": 5.5
+                };
+                var geojson = {
+                    type: "Feature",
+                    properties: trackStyle,
+                    geometry: geometry
+                };
+                trackData.GeoJSON = geojson;
                 directions.selectTrack(trackData);
             }
         };
