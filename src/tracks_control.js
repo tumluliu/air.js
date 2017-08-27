@@ -93,6 +93,7 @@ module.exports = function(container, directions) {
                 values.push(row);
             });
             tc.bind(values);
+            tc.tbody.rows.item(0).click();
             pg.update({ displayed: 10, total: totalPages });
         }
     };
@@ -160,6 +161,7 @@ module.exports = function(container, directions) {
                     values.push(row);
                 });
                 tc.bind(values);
+                tc.tbody.rows.item(0).click();
             }
         };
         pagedTrackinfoXhr.open(

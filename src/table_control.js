@@ -12,7 +12,7 @@ var renderRow = function(container, data) {
 var renderHeader = function(container, data) {
     var row = container.insertRow();
     data.forEach(function(str) {
-        var th = document.createElement('th');
+        var th = document.createElement("th");
         th.innerHTML = str;
         row.appendChild(th);
     });
@@ -20,7 +20,7 @@ var renderHeader = function(container, data) {
 };
 
 var TableControl = function(
-    element /*: Object */, /* TableElement */
+    element /* TableElement */ /*: Object */,
     headers /*: [string] */,
     model /*: ?[[string]] */
 ) {
@@ -30,7 +30,7 @@ var TableControl = function(
 };
 
 TableControl.prototype.clear = function() {
-    while (this.tbody.hasChildNodes()) {   
+    while (this.tbody.hasChildNodes()) {
         this.tbody.removeChild(this.tbody.firstChild);
     }
 };
@@ -45,9 +45,13 @@ TableControl.prototype.bind = function(model) {
     var self = this;
     model.forEach(function(data) {
         var row = renderRow(self.tbody, data);
-        row.addEventListener('click', function() {
+        row.addEventListener("click", function() {
             if (self.onSelectedHandler) {
                 self.onSelectedHandler(data);
+                document.querySelectorAll("tr").forEach(function(tr) {
+                    tr.className = "";
+                });
+                this.className += " selected";
             }
         });
     });
