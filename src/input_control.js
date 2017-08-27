@@ -209,9 +209,7 @@ module.exports = function(container, directions) {
         .on("change", function(d) {
             if (this.checked) {
                 directionProviders.openrouteservice = true;
-                directions.query({
-                    provider: "openrouteservice"
-                });
+                changeORSCyclingOption();
                 disableORSRadioBtns(false);
             } else {
                 directionProviders.openrouteservice = false;
@@ -316,7 +314,10 @@ module.exports = function(container, directions) {
         var selectedOption = d3
             .select("input[name=orsProfileBicycle]:checked")
             .attr("value");
-        console.log(selectedOption);
+        directions.query({
+            provider: "openrouteservice",
+            profile: selectedOption
+        });
     }
 
     function disableORSRadioBtns(is_disabled) {
