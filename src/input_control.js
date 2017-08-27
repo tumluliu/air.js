@@ -207,16 +207,23 @@ module.exports = function(container, directions) {
         .attr("id", "show-ors-cycling")
         .property("checked", false)
         .on("change", function(d) {
+            var orsCyclingRadios = d3.selectAll(
+                "input[name='orsProfileBicycle']"
+            );
             if (this.checked) {
                 directionProviders.openrouteservice = true;
                 directions.query({
                     provider: "openrouteservice"
                 });
-                orsCyclingOptions.property("disabled", false);
+                orsCyclingRadios.forEach(function(r) {
+                    r.disabled = false;
+                });
             } else {
                 directionProviders.openrouteservice = false;
                 directions.enableProvider("openrouteservice", false);
-                orsCyclingOptions.property("disabled", true);
+                orsCyclingRadios.forEach(function(r) {
+                    r.disabled = true;
+                });
             }
         });
 
@@ -233,10 +240,13 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-regular")
         .attr("value", "cycling-regular")
-        .text("Normal")
-        .on("change", function(d) {
-            alert(d);
-        });
+        .property("checked", true)
+        .on("change", changeORSCyclingOption);
+
+    orsCyclingOptions
+        .append("label")
+        .attr("for", "ors-bicycle-regular")
+        .html("Normal");
 
     var orsCyclingSafe = orsCyclingOptions
         .append("input")
@@ -244,10 +254,12 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-safe")
         .attr("value", "cycling-safe")
-        .text("Safest")
-        .on("change", function(d) {
-            alert(d);
-        });
+        .on("change", changeORSCyclingOption);
+
+    orsCyclingOptions
+        .append("label")
+        .attr("for", "ors-bicycle-safe")
+        .html("Safest");
 
     var orsCyclingTour = orsCyclingOptions
         .append("input")
@@ -255,10 +267,12 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-tour")
         .attr("value", "cycling-tour")
-        .text("Touring bike")
-        .on("change", function(d) {
-            alert(d);
-        });
+        .on("change", changeORSCyclingOption);
+
+    orsCyclingOptions
+        .append("label")
+        .attr("for", "ors-bicycle-tour")
+        .html("Touring bike");
 
     var orsCyclingMountain = orsCyclingOptions
         .append("input")
@@ -266,10 +280,12 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-mountain")
         .attr("value", "cycling-mountain")
-        .text("Mountain bike")
-        .on("change", function(d) {
-            alert(d);
-        });
+        .on("change", changeORSCyclingOption);
+
+    orsCyclingOptions
+        .append("label")
+        .attr("for", "ors-bicycle-mountain")
+        .html("Mountain bike");
 
     var orsCyclingRoad = orsCyclingOptions
         .append("input")
@@ -277,10 +293,12 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-road")
         .attr("value", "cycling-road")
-        .text("Road bike")
-        .on("change", function(d) {
-            alert(d);
-        });
+        .on("change", changeORSCyclingOption);
+
+    orsCyclingOptions
+        .append("label")
+        .attr("for", "ors-bicycle-road")
+        .html("Road bike");
 
     var orsCyclingElectric = orsCyclingOptions
         .append("input")
@@ -288,10 +306,19 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-electric")
         .attr("value", "cycling-electric")
-        .text("e-bike")
-        .on("change", function(d) {
-            alert(d);
-        });
+        .on("change", changeORSCyclingOption);
+
+    orsCyclingOptions
+        .append("label")
+        .attr("for", "ors-bicycle-electric")
+        .html("e-bike");
+
+    function changeORSCyclingOption() {
+        var selectedOption = d3
+            .select("input[name=orsProfileBicycle]:checked")
+            .attr("value");
+        alert(selectedOption);
+    }
 
     function format(waypoint) {
         if (!waypoint) {

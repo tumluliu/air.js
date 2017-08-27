@@ -135,6 +135,7 @@ input:not(:valid) + .mapbox-close-icon {
 
 .mapbox-directions-profile input[type=radio] {
     background-color: transparent;
+    display: none;
     margin-left: 10px;
     margin-top: 1px;
     margin-right: 5px;
