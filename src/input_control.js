@@ -207,23 +207,16 @@ module.exports = function(container, directions) {
         .attr("id", "show-ors-cycling")
         .property("checked", false)
         .on("change", function(d) {
-            var orsCyclingRadios = d3.selectAll(
-                "input[name='orsProfileBicycle']"
-            );
             if (this.checked) {
                 directionProviders.openrouteservice = true;
                 directions.query({
                     provider: "openrouteservice"
                 });
-                orsCyclingRadios.forEach(function(r) {
-                    r.disabled = false;
-                });
+                disableORSRadioBtns(false);
             } else {
                 directionProviders.openrouteservice = false;
                 directions.enableProvider("openrouteservice", false);
-                orsCyclingRadios.forEach(function(r) {
-                    r.disabled = true;
-                });
+                disableORSRadioBtns(true);
             }
         });
 
@@ -241,6 +234,7 @@ module.exports = function(container, directions) {
         .attr("id", "ors-bicycle-regular")
         .attr("value", "cycling-regular")
         .property("checked", true)
+        .property("disabled", true)
         .on("change", changeORSCyclingOption);
 
     orsCyclingOptions
@@ -254,6 +248,7 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-safe")
         .attr("value", "cycling-safe")
+        .property("disabled", true)
         .on("change", changeORSCyclingOption);
 
     orsCyclingOptions
@@ -267,6 +262,7 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-tour")
         .attr("value", "cycling-tour")
+        .property("disabled", true)
         .on("change", changeORSCyclingOption);
 
     orsCyclingOptions
@@ -280,6 +276,7 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-mountain")
         .attr("value", "cycling-mountain")
+        .property("disabled", true)
         .on("change", changeORSCyclingOption);
 
     orsCyclingOptions
@@ -293,6 +290,7 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-road")
         .attr("value", "cycling-road")
+        .property("disabled", true)
         .on("change", changeORSCyclingOption);
 
     orsCyclingOptions
@@ -306,6 +304,7 @@ module.exports = function(container, directions) {
         .attr("name", "orsProfileBicycle")
         .attr("id", "ors-bicycle-electric")
         .attr("value", "cycling-electric")
+        .property("disabled", true)
         .on("change", changeORSCyclingOption);
 
     orsCyclingOptions
@@ -317,7 +316,13 @@ module.exports = function(container, directions) {
         var selectedOption = d3
             .select("input[name=orsProfileBicycle]:checked")
             .attr("value");
-        alert(selectedOption);
+        console.log(selectedOption);
+    }
+
+    function disableORSRadioBtns(is_disabled) {
+        d3.selectAll("input[name='orsProfileBicycle']")[0].forEach(function(r) {
+            r.disabled = is_disabled;
+        });
     }
 
     function format(waypoint) {
