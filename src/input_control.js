@@ -201,16 +201,17 @@ module.exports = function(container, directions) {
         .attr("name", "enabled")
         .attr("id", "show-ors-cycling")
         .property("checked", false)
-        .on("change", function(d) {
+        .on("change", function() {
             if (this.checked) {
                 directionProviders.openrouteservice = true;
                 changeORSCyclingOption();
-                disableORSRadioBtns(false);
             } else {
                 directionProviders.openrouteservice = false;
                 directions.enableProvider("openrouteservice", false);
-                disableORSRadioBtns(true);
             }
+            orsRadioButtons.forEach(function(r) {
+                r.property("disabled", !this.checked);
+            }, this);
         });
 
     orsDirections
@@ -220,85 +221,98 @@ module.exports = function(container, directions) {
         .text("OPENROUTESERVICE");
 
     var orsCyclingOptions = orsDirections.append("div");
-    var orsCyclingRegular = orsCyclingOptions
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle-regular")
-        .attr("value", "cycling-regular")
-        .property("checked", true)
-        .property("disabled", true)
-        .on("change", changeORSCyclingOption);
+    var orsRadioButtons = [];
+    orsRadioButtons.push(
+        orsCyclingOptions
+            .append("input")
+            .attr("type", "radio")
+            .attr("name", "orsProfileBicycle")
+            .attr("id", "ors-bicycle-regular")
+            .attr("value", "cycling-regular")
+            .property("checked", true)
+            .property("disabled", true)
+            .on("change", changeORSCyclingOption)
+    );
 
     orsCyclingOptions
         .append("label")
         .attr("for", "ors-bicycle-regular")
         .html("Normal");
 
-    var orsCyclingSafe = orsCyclingOptions
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle-safe")
-        .attr("value", "cycling-safe")
-        .property("disabled", true)
-        .on("change", changeORSCyclingOption);
+    orsRadioButtons.push(
+        orsCyclingOptions
+            .append("input")
+            .attr("type", "radio")
+            .attr("name", "orsProfileBicycle")
+            .attr("id", "ors-bicycle-safe")
+            .attr("value", "cycling-safe")
+            .property("disabled", true)
+            .on("change", changeORSCyclingOption)
+    );
 
     orsCyclingOptions
         .append("label")
         .attr("for", "ors-bicycle-safe")
         .html("Safest");
 
-    var orsCyclingTour = orsCyclingOptions
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle-tour")
-        .attr("value", "cycling-tour")
-        .property("disabled", true)
-        .on("change", changeORSCyclingOption);
+    orsRadioButtons.push(
+        orsCyclingOptions
+            .append("input")
+            .attr("type", "radio")
+            .attr("name", "orsProfileBicycle")
+            .attr("id", "ors-bicycle-tour")
+            .attr("value", "cycling-tour")
+            .property("disabled", true)
+            .on("change", changeORSCyclingOption)
+    );
 
     orsCyclingOptions
         .append("label")
         .attr("for", "ors-bicycle-tour")
         .html("Touring bike");
 
-    var orsCyclingMountain = orsCyclingOptions
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle-mountain")
-        .attr("value", "cycling-mountain")
-        .property("disabled", true)
-        .on("change", changeORSCyclingOption);
+    orsRadioButtons.push(
+        orsCyclingOptions
+            .append("input")
+            .attr("type", "radio")
+            .attr("name", "orsProfileBicycle")
+            .attr("id", "ors-bicycle-mountain")
+            .attr("value", "cycling-mountain")
+            .property("disabled", true)
+            .on("change", changeORSCyclingOption)
+    );
 
     orsCyclingOptions
         .append("label")
         .attr("for", "ors-bicycle-mountain")
         .html("Mountain bike");
 
-    var orsCyclingRoad = orsCyclingOptions
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle-road")
-        .attr("value", "cycling-road")
-        .property("disabled", true)
-        .on("change", changeORSCyclingOption);
+    orsRadioButtons.push(
+        orsCyclingOptions
+            .append("input")
+            .attr("type", "radio")
+            .attr("name", "orsProfileBicycle")
+            .attr("id", "ors-bicycle-road")
+            .attr("value", "cycling-road")
+            .property("disabled", true)
+            .on("change", changeORSCyclingOption)
+    );
 
     orsCyclingOptions
         .append("label")
         .attr("for", "ors-bicycle-road")
         .html("Road bike");
 
-    var orsCyclingElectric = orsCyclingOptions
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "orsProfileBicycle")
-        .attr("id", "ors-bicycle-electric")
-        .attr("value", "cycling-electric")
-        .property("disabled", true)
-        .on("change", changeORSCyclingOption);
+    orsRadioButtons.push(
+        orsCyclingOptions
+            .append("input")
+            .attr("type", "radio")
+            .attr("name", "orsProfileBicycle")
+            .attr("id", "ors-bicycle-electric")
+            .attr("value", "cycling-electric")
+            .property("disabled", true)
+            .on("change", changeORSCyclingOption)
+    );
 
     orsCyclingOptions
         .append("label")
@@ -312,12 +326,6 @@ module.exports = function(container, directions) {
         directions.query({
             provider: "openrouteservice",
             profile: selectedOption
-        });
-    }
-
-    function disableORSRadioBtns(is_disabled) {
-        d3.selectAll("input[name='orsProfileBicycle']")[0].forEach(function(r) {
-            r.disabled = is_disabled;
         });
     }
 
@@ -349,13 +357,16 @@ module.exports = function(container, directions) {
             destinationInput.property("value", format(e.destination));
         })
         .on("checkmapbox", function(e) {
-            checkboxMapbox.property("checked", false);
+            checkboxMapbox.property("checked", e.checked);
         })
         .on("checkgoogle", function(e) {
-            checkboxGoogle.property("checked", false);
+            checkboxGoogle.property("checked", e.checked);
         })
         .on("checkors", function(e) {
-            checkboxORS.property("checked", false);
+            checkboxORS.property("checked", e.checked);
+            orsRadioButtons.forEach(function(r) {
+                r.property("disabled", !e.checked);
+            });
         })
         .on("load", function(e) {
             originInput.property("value", format(e.origin));
