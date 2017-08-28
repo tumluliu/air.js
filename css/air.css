@@ -428,8 +428,9 @@ table.air-tracks thead {
     overflow-y: scroll;
     display: table;
     table-layout: fixed;
-    /* width: calc(100% - 16px); */
-    /* assuming scrollbar width as 16px */
+    /* assuming scrollbar width as 16px, 
+    and make the header's delimeters align with the tbody */
+    width: calc(100% - 16px);
 }
 
 table.air-tracks tbody {

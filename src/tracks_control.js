@@ -1,8 +1,7 @@
 "use strict";
 
 var tableControl = require("./table_control.js"),
-    pagingControl = require("./paging_control.js"),
-    getRequest = require("./get_request.js");
+    pagingControl = require("./paging_control.js");
 
 module.exports = function(container, directions) {
     var control = {},
