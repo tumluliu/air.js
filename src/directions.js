@@ -124,23 +124,6 @@ var Directions = L.Class.extend({
         return this;
     },
 
-    reverse: function() {
-        var o = this.origin,
-            d = this.destination;
-
-        this.origin = d;
-        this.destination = o;
-        this._waypoints.reverse();
-
-        this.fire("origin", {
-            origin: this.origin
-        }).fire("destination", {
-            destination: this.destination
-        });
-
-        return this;
-    },
-
     selectRoute: function(route) {
         this.fire("selectRoute", {
             route: route
@@ -157,12 +140,6 @@ var Directions = L.Class.extend({
     highlightRoute: function(route) {
         this.fire("highlightRoute", {
             route: route
-        });
-    },
-
-    highlightStep: function(step) {
-        this.fire("highlightStep", {
-            step: step
         });
     },
 

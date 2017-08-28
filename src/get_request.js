@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-var corslite = require('@mapbox/corslite');
+var corslite = require("@mapbox/corslite");
 
 module.exports = function(url, callback) {
-    return corslite(url, function (err, resp) {
-        if (err && err.type === 'abort') {
+    return corslite(url, function(err, resp) {
+        if (err && err.type === "abort") {
             return;
         }
 

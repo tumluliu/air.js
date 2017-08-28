@@ -5,8 +5,6 @@ var d3 = require("../lib/d3");
 module.exports = function(container, directions) {
     var control = {},
         map;
-    var origChange = false,
-        destChange = false;
 
     control.addTo = function(_) {
         map = _;
@@ -17,39 +15,13 @@ module.exports = function(container, directions) {
         .select(L.DomUtil.get(container))
         .classed("mapbox-directions-inputs", true);
 
-    var form = container.append("form").on("keypress", function() {
-        if (d3.event.keyCode === 13) {
-            d3.event.preventDefault();
-            if (origChange) directions.setOrigin(originInput.property("value"));
-            if (destChange)
-                directions.setDestination(destinationInput.property("value"));
-            if (directions.queryable())
-                for (var key in directionProviders) {
-                    if (
-                        directionProviders.hasOwnProperty(key) &&
-                        directionProviders[key] === true
-                    ) {
-                        directions.query({
-                            proximity: map.getCenter(),
-                            provider: key
-                        });
-                    }
-                }
-            origChange = false;
-            destChange = false;
-        }
-    });
+    var form = container.append("form");
 
     var origin = form.append("div").attr("class", "mapbox-directions-origin");
 
     origin
         .append("label")
         .attr("class", "mapbox-form-label")
-        .on("click", function() {
-            if (directions.getOrigin() instanceof L.LatLng) {
-                map.panTo(directions.getOrigin());
-            }
-        })
         .append("span")
         .attr("class", "mapbox-directions-icon mapbox-depart-icon");
 
@@ -59,37 +31,7 @@ module.exports = function(container, directions) {
         .attr("required", "required")
         .attr("id", "air-origin-input")
         .attr("placeholder", "Start")
-        .on("input", function() {
-            if (!origChange) origChange = true;
-        });
-
-    origin
-        .append("div")
-        .attr("class", "mapbox-directions-icon mapbox-close-icon")
-        .attr("title", "Clear value")
-        .on("click", function() {
-            directions.setOrigin(undefined);
-        });
-
-    form
-        .append("span")
-        .attr(
-            "class",
-            "mapbox-directions-icon mapbox-reverse-icon mapbox-directions-reverse-input"
-        )
-        .attr("title", "Reverse origin & destination")
-        .on("click", function() {
-            for (var key in directionProviders) {
-                if (
-                    directionProviders.hasOwnProperty(key) &&
-                    directionProviders[key] === true
-                ) {
-                    directions.reverse().query({
-                        provider: key
-                    });
-                }
-            }
-        });
+        .property("readOnly", true);
 
     var destination = form
         .append("div")
@@ -98,11 +40,6 @@ module.exports = function(container, directions) {
     destination
         .append("label")
         .attr("class", "mapbox-form-label")
-        .on("click", function() {
-            if (directions.getDestination() instanceof L.LatLng) {
-                map.panTo(directions.getDestination());
-            }
-        })
         .append("span")
         .attr("class", "mapbox-directions-icon mapbox-arrive-icon");
 
@@ -112,17 +49,7 @@ module.exports = function(container, directions) {
         .attr("required", "required")
         .attr("id", "air-destination-input")
         .attr("placeholder", "End")
-        .on("input", function() {
-            if (!destChange) destChange = true;
-        });
-
-    destination
-        .append("div")
-        .attr("class", "mapbox-directions-icon mapbox-close-icon")
-        .attr("title", "Clear value")
-        .on("click", function() {
-            directions.setDestination(undefined);
-        });
+        .property("readOnly", true);
 
     var directionProviders = {
         mapbox: false,
