@@ -161,6 +161,7 @@ module.exports = function(container, directions) {
                 });
                 tc.bind(values);
                 tc.tbody.rows.item(0).click();
+                tc.tbody.rows.item(0).scrollIntoView();
             }
         };
         pagedTrackinfoXhr.open(
