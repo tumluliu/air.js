@@ -12,14 +12,11 @@
         "url": "git://github.com/tumluliu/air.js.git"
     },
     "dependencies": {
-        "@mapbox/corslite": "latest",
         "d3": "latest",
-        "d3-xhr": "latest",
-        "spin.js": "latest",
-        "debounce": "latest",
+        "d3-queue": "latest",
         "mapbox.js": "latest",
-        "@mapbox/polyline": "latest",
-        "queue-async": "latest"
+        "@mapbox/corslite": "latest",
+        "@mapbox/polyline": "latest"
     },
     "devDependencies": {
         "mocha": "1",
