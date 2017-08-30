@@ -2,7 +2,7 @@
 
 var getRequest = require("./get_request"),
     polyline = require("@mapbox/polyline"),
-    queue = require("queue-async");
+    d3 = require("d3");
 
 var Directions = L.Class.extend({
     includes: [L.Mixin.Events],
@@ -131,10 +131,10 @@ var Directions = L.Class.extend({
     },
 
     selectTrack: function(track) {
-        this._clearResultRoutes();
         this.fire("selectTrack", {
             track: track.GeoJSON
         });
+        this._showToggledRoutes();
     },
 
     highlightRoute: function(route) {
@@ -167,7 +167,9 @@ var Directions = L.Class.extend({
                 this.directions[p].routes[0].geometry
             );
         }, this);
-        this.fire("load", this.directions);
+        if (is_enabled) {
+            this.fire("load", this.directions);
+        }
     },
 
     queryURL: function(opts) {
@@ -217,7 +219,7 @@ var Directions = L.Class.extend({
         return null;
     },
 
-    _clearResultRoutes: function() {
+    _showToggledRoutes: function() {
         this.options.available_providers.forEach(function(p) {
             if (this.directions.hasOwnProperty(p)) {
                 this.directions[p] = undefined;
@@ -228,9 +230,9 @@ var Directions = L.Class.extend({
             type: "FeatureCollection",
             features: []
         };
-        this.fire("checkmapbox", { checked: false });
-        this.fire("checkgoogle", { checked: false });
-        this.fire("checkors", { checked: false });
+        this.fire("checkors");
+        this.fire("checkgoogle");
+        this.fire("checkmapbox");
     },
 
     _constructRoutingResult: function(resp, provider) {
@@ -301,100 +303,90 @@ var Directions = L.Class.extend({
         if (!opts) return this;
         if (!this.queryable()) return this;
 
-        if (this._query) {
-            this._query.abort();
-        }
+        var q = d3.queue(3);
 
-        if (this._requests && this._requests.length)
-            this._requests.forEach(function(getRequest) {
-                getRequest.abort();
-            });
-        this._requests = [];
-
-        var q = queue();
-
-        var pts = [this.origin, this.destination].concat(this._waypoints);
-        for (var i in pts) {
+        var pts = [this.origin, this.destination];
+        pts.forEach(function(p) {
             if (
-                !pts[i].geometry.coordinates ||
-                !pts[i].properties.hasOwnProperty("name")
+                !p.geometry.coordinates ||
+                !p.properties.hasOwnProperty("name")
             ) {
-                q.defer(L.bind(this._geocode, this), pts[i], opts.proximity);
+                q.defer(L.bind(this._geocode, this), p, opts.proximity);
             }
-        }
+        }, this);
 
-        q.await(
+        q.defer(L.bind(this._getRoute, this), opts).await(
             L.bind(function(err) {
                 if (err) {
                     return this.fire("error", {
                         error: err.message
                     });
                 }
-
-                this._query = getRequest(
-                    this.queryURL(opts),
-                    L.bind(function(err, resp) {
-                        this._query = null;
-
-                        if (err) {
-                            return this.fire("error", {
-                                error: err.message
-                            });
-                        }
-
-                        this._constructRoutingResult(resp, opts.provider);
-                        if (!this.origin.properties.name) {
-                            this.origin = this.directions.origin;
-                        } else {
-                            this.directions.origin = this.origin;
-                        }
-
-                        if (!this.destination.properties.name) {
-                            this.destination = this.directions.destination;
-                        } else {
-                            this.directions.destination = this.destination;
-                        }
-                        this.enableProvider(opts.provider, true);
-                    }, this),
-                    this
-                );
             }, this)
         );
 
         return this;
     },
 
-    _geocode: function(waypoint, proximity, cb) {
-        if (!this._requests) this._requests = [];
-        this._requests.push(
-            getRequest(
-                L.Util.template(this.options.mapbox.geocoder_template, {
-                    query: waypoint.properties.query,
-                    token: this.options.mapbox.key || L.mapbox.accessToken,
-                    proximity: proximity
-                        ? [proximity.lng, proximity.lat].join(",")
-                        : ""
-                }),
-                L.bind(function(err, resp) {
-                    if (err) {
-                        return cb(err);
-                    }
+    _getRoute: function(opts) {
+        this._routeReq = getRequest(
+            this.queryURL(opts),
+            L.bind(function(err, resp) {
+                this._routeReq = null;
 
-                    if (!resp.features || !resp.features.length) {
-                        return cb(
-                            new Error(
-                                "No results found for query " +
-                                    waypoint.properties.query
-                            )
-                        );
-                    }
+                if (err) {
+                    return this.fire("error", {
+                        error: err.message
+                    });
+                }
 
-                    waypoint.geometry.coordinates = resp.features[0].center;
-                    waypoint.properties.name = resp.features[0].place_name;
+                this._constructRoutingResult(resp, opts.provider);
+                if (!this.origin.properties.name) {
+                    this.origin = this.directions.origin;
+                } else {
+                    this.directions.origin = this.origin;
+                }
 
-                    return cb();
-                }, this)
-            )
+                if (!this.destination.properties.name) {
+                    this.destination = this.directions.destination;
+                } else {
+                    this.directions.destination = this.destination;
+                }
+                this.enableProvider(opts.provider, true);
+            }, this),
+            this
+        );
+    },
+
+    _geocode: function(point, proximity, cb) {
+        this._geocodeReq = getRequest(
+            L.Util.template(this.options.mapbox.geocoder_template, {
+                query: point.properties.query,
+                token: this.options.mapbox.key || L.mapbox.accessToken,
+                proximity: proximity
+                    ? [proximity.lng, proximity.lat].join(",")
+                    : ""
+            }),
+            L.bind(function(err, resp) {
+                this._geocodeReq = null;
+                if (err) {
+                    return cb(err);
+                }
+
+                if (!resp.features || !resp.features.length) {
+                    return cb(
+                        new Error(
+                            "No results found for query " +
+                                point.properties.query
+                        )
+                    );
+                }
+
+                point.geometry.coordinates = resp.features[0].center;
+                point.properties.name = resp.features[0].place_name;
+
+                return cb();
+            }, this)
         );
     },
 

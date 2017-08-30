@@ -1,6 +1,11 @@
+/*
+  **NOTE**: This file is reserved only for showing the 
+  information about tracks and routes in the future. 
+  For the moment it does nothing.
+*/
 "use strict";
 
-var d3 = require("../lib/d3"),
+var d3 = require("d3"),
     format = require("./format");
 
 module.exports = function(container, directions) {
@@ -69,7 +74,7 @@ module.exports = function(container, directions) {
             directions.selectRoute(route);
         });
 
-        directions.selectRoute(e.routes);
+        // directions.selectRoute(e.routes);
     });
 
     directions.on("selectRoute", function(e) {

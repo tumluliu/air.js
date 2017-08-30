@@ -1,6 +1,6 @@
 "use strict";
 
-var d3 = require("../lib/d3");
+var d3 = require("d3");
 
 module.exports = function(container, directions) {
     var control = {},
@@ -69,17 +69,21 @@ module.exports = function(container, directions) {
         .attr("name", "enabled")
         .attr("id", "show-mapbox-cycling")
         .property("checked", false)
-        .on("change", function(d) {
-            if (this.checked) {
-                directionProviders.mapbox = true;
-                directions.query({
-                    provider: "mapbox"
-                });
-            } else {
-                directionProviders.mapbox = false;
-                directions.enableProvider("mapbox", false);
-            }
+        .on("change", function() {
+            toggleMapbox(this.checked);
         });
+
+    function toggleMapbox(checked) {
+        if (checked) {
+            directionProviders.mapbox = true;
+            directions.query({
+                provider: "mapbox"
+            });
+        } else {
+            directionProviders.mapbox = false;
+            directions.enableProvider("mapbox", false);
+        }
+    }
 
     mapboxDirections
         .append("label")
@@ -98,17 +102,21 @@ module.exports = function(container, directions) {
         .attr("name", "enabled")
         .attr("id", "show-google-cycling")
         .property("checked", false)
-        .on("change", function(d) {
-            if (this.checked) {
-                directionProviders.google = true;
-                directions.query({
-                    provider: "google"
-                });
-            } else {
-                directionProviders.google = false;
-                directions.enableProvider("google", false);
-            }
+        .on("change", function() {
+            toggleGoogle(this.checked);
         });
+
+    function toggleGoogle(checked) {
+        if (checked) {
+            directionProviders.google = true;
+            directions.query({
+                provider: "google"
+            });
+        } else {
+            directionProviders.google = false;
+            directions.enableProvider("google", false);
+        }
+    }
 
     googleDirections
         .append("label")
@@ -129,17 +137,21 @@ module.exports = function(container, directions) {
         .attr("id", "show-ors-cycling")
         .property("checked", false)
         .on("change", function() {
-            if (this.checked) {
-                directionProviders.openrouteservice = true;
-                changeORSCyclingOption();
-            } else {
-                directionProviders.openrouteservice = false;
-                directions.enableProvider("openrouteservice", false);
-            }
-            orsRadioButtons.forEach(function(r) {
-                r.property("disabled", !this.checked);
-            }, this);
+            toggleORS(this.checked);
         });
+
+    function toggleORS(checked) {
+        if (checked) {
+            directionProviders.openrouteservice = true;
+            changeORSCyclingOption();
+        } else {
+            directionProviders.openrouteservice = false;
+            directions.enableProvider("openrouteservice", false);
+        }
+        orsRadioButtons.forEach(function(r) {
+            r.property("disabled", !checked);
+        });
+    }
 
     orsDirections
         .append("label")
@@ -283,17 +295,14 @@ module.exports = function(container, directions) {
         .on("destination", function(e) {
             destinationInput.property("value", format(e.destination));
         })
-        .on("checkmapbox", function(e) {
-            checkboxMapbox.property("checked", e.checked);
+        .on("checkmapbox", function() {
+            toggleMapbox(checkboxMapbox.property("checked"));
         })
-        .on("checkgoogle", function(e) {
-            checkboxGoogle.property("checked", e.checked);
+        .on("checkgoogle", function() {
+            toggleGoogle(checkboxGoogle.property("checked"));
         })
-        .on("checkors", function(e) {
-            checkboxORS.property("checked", e.checked);
-            orsRadioButtons.forEach(function(r) {
-                r.property("disabled", !e.checked);
-            });
+        .on("checkors", function() {
+            toggleORS(checkboxORS.property("checked"));
         })
         .on("load", function(e) {
             originInput.property("value", format(e.origin));
