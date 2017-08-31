@@ -303,10 +303,6 @@ module.exports = function(container, directions) {
         })
         .on("checkors", function() {
             toggleORS(checkboxORS.property("checked"));
-        })
-        .on("load", function(e) {
-            originInput.property("value", format(e.origin));
-            destinationInput.property("value", format(e.destination));
         });
 
     return control;

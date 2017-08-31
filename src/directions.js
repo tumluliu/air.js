@@ -100,30 +100,6 @@ var Directions = L.Class.extend({
         return this;
     },
 
-    getWaypoints: function() {
-        return this._waypoints;
-    },
-
-    setWaypoints: function(waypoints) {
-        this._waypoints = waypoints.map(this._normalizeWaypoint);
-        return this;
-    },
-
-    addWaypoint: function(index, waypoint) {
-        this._waypoints.splice(index, 0, this._normalizeWaypoint(waypoint));
-        return this;
-    },
-
-    removeWaypoint: function(index) {
-        this._waypoints.splice(index, 1);
-        return this;
-    },
-
-    setWaypoint: function(index, waypoint) {
-        this._waypoints[index] = this._normalizeWaypoint(waypoint);
-        return this;
-    },
-
     selectRoute: function(route) {
         this.fire("selectRoute", {
             route: route
@@ -303,6 +279,8 @@ var Directions = L.Class.extend({
 
         var q = d3.queue(3);
 
+        this.origin.properties.role = "origin";
+        this.destination.properties.role = "destination";
         var pts = [this.origin, this.destination];
         pts.forEach(function(p) {
             if (
@@ -382,6 +360,11 @@ var Directions = L.Class.extend({
 
                 point.geometry.coordinates = resp.features[0].center;
                 point.properties.name = resp.features[0].place_name;
+                if (point.properties.role === "origin") {
+                    this.setOrigin(point);
+                } else if (point.properties.role === "destination") {
+                    this.setDestination(point);
+                }
 
                 return cb();
             }, this)
