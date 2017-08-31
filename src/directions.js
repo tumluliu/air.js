@@ -167,9 +167,7 @@ var Directions = L.Class.extend({
                 this.directions[p].routes[0].geometry
             );
         }, this);
-        if (is_enabled) {
-            this.fire("load", this.directions);
-        }
+        this.fire("load", this.directions);
     },
 
     queryURL: function(opts) {

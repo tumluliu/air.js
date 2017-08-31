@@ -78,8 +78,6 @@ var Layer = L.LayerGroup.extend({
     },
 
     _load: function(e) {
-        this._origin(e);
-        this._destination(e);
         this._selectRoute({ route: e.routes });
     },
 
