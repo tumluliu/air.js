@@ -28,7 +28,7 @@ var Directions = L.Class.extend({
         openrouteservice: {
             api_template:
                 "https://api.openrouteservice.org/directions?&coordinates={coordinates}&instructions=false&preference={preference}&profile={profile}&api_key={token}",
-            key: "58d904a497c67e00015b45fcf243eacf4b25434c6e28d7fd61c9d309",
+            key: "58d904a497c67e00015b45fc1281f9bd6fcb469f4b202d7cf86e2857",
             preference: "",
             profile: "cycling-regular",
             path_style: {
